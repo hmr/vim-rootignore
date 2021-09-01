@@ -17,59 +17,57 @@
 " under foo/bar/
 
 function! s:WildignoreFromGitignore(gitpath, isAtRoot)
-  let gitignore = a:gitpath . "/.gitignore"
+  let gitignore = a:gitpath . '/.gitignore'
   if filereadable(gitignore)
     let igstring = ''
     for oline in readfile(gitignore)
 
-      " let line = substitute(oline, '\s|\n|\r', '', "g")
       let line = substitute(oline, '\s', '\\ ', 'g')
-      if line =~ '^#'   | con | endif
-      if line == ''     | con | endif
-      if line =~ '^!'   | con | endif
-      if line =~ '^\s$' | con | endif
+      if line =~# '^#'   | continue | endif
+      if line ==# ''     | continue | endif
+      if line =~# '^!'   | continue | endif
+      if line =~# '^\s$' | continue | endif
 
 
       if a:isAtRoot
         " If line starts with a '/', remove it
-        if line =~ '^/'
+        if line =~# '^/'
           let line = substitute(line, '/', '', '')
         endif
 
-        if line =~ '/$'
-          let igstring .= "," . line . "*"
+        if line =~# '/$'
+          let igstring .= ',' . line . '*'
         else
-          let igstring .= "," . line
+          let igstring .= ',' . line
         endif
       else
-        let fullPath = a:gitpath . "/" . line
+        let fullPath = a:gitpath . '/' . line
 
-        if line =~ "/"
+        if line =~# '/'
           if fullPath =~ getcwd()
-            let pattern = fnamemodify(fullPath, ":.")
-            if pattern =~ "/$"
-              let pattern .= "*"
+            let pattern = fnamemodify(fullPath, ':.')
+            if pattern =~# '/$'
+              let pattern .= '*'
             endif
-            let igstring .= "," . pattern
+            let igstring .= ',' . pattern
           endif
         else
-          let igstring .= "," . line
+          let igstring .= ',' . line
         endif
       endif
 
     endfor
-    execute "set wildignore+=" . substitute(igstring, '^,', '', "g")
+    execute 'set wildignore+=' . substitute(igstring, '^,', '', 'g')
 
     " Set ag's ignore
-    if exists("g:RootIgnoreAgignore") && g:RootIgnoreAgignore
+    if exists('g:RootIgnoreAgignore') && g:RootIgnoreAgignore
       let agignore = ''
       for oline in readfile(gitignore)
-        " let line = substitute(oline, '\s|\n|\r', '', "g")
         let line = substitute(oline, '\s', '\\ ', 'g')
-        if line =~ '^#' | con | endif
-        if line == ''   | con | endif
-        if line =~ '^!' | con | endif
-        if line =~ '/$' | let igstring .= "," . line . "*" | con | endif
+        if line =~# '^#' | continue | endif
+        if line ==# ''   | continue | endif
+        if line =~# '^!' | continue | endif
+        if line =~# '/$' | let igstring .= ',' . line . '*' | con | endif
         let agignore .= " --ignore '" . line . "'"
       endfor
       let agcommand = 'ag %s -i --nocolor -g ""' . agignore
@@ -83,24 +81,24 @@ function! s:WildignoreFromGitignore(gitpath, isAtRoot)
 endfunction
 
 function! s:RootIgnore()
-  if !exists("g:RootIgnoreUseHome") || g:RootIgnoreUseHome
-    let home = finddir("~", ":p:h")
+  if !exists('g:RootIgnoreUseHome') || g:RootIgnoreUseHome
+    let home = finddir('~', ':p:h')
     call s:WildignoreFromGitignore(home, 1)
   endif
 
-  let gitdir = finddir(".git", ";")
+  let gitdir = finddir('.git', ';')
 
   " At root
-  if gitdir == ".git"
+  if gitdir ==# '.git'
     call s:WildignoreFromGitignore(getcwd(), 1)
   " Not at root
-  elseif gitdir =~ "/"
-    call s:WildignoreFromGitignore(fnamemodify(gitdir, ":h"), 0)
+  elseif gitdir =~# '/'
+    call s:WildignoreFromGitignore(fnamemodify(gitdir, ':h'), 0)
   " Not in a git folder
   " Just check if current directory has a .gitignore
   " If yes, add its patterns
   elseif filereadable('.gitignore')
-    call s:WildignoreFromGitignore(".", 1)
+    call s:WildignoreFromGitignore('.', 1)
   endif
 
 endfunction
