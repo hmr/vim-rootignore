@@ -1,6 +1,11 @@
-# RootIgnore
+# vim-rootignore
 
 **Set 'wildignore' from git repo root or home folder**
+
+This is derived version of [RootIgnore](https://github.com/octref/RootIgnore) by @octref.
+
+- Apply Dylan Chong's patch(https://github.com/octref/RootIgnore/pull/4) to original RootIgnore.
+- Some syntastic modifications.
 
 ## Usage
 This plugin is designed to complement CtrlP & Command-T by automatically
